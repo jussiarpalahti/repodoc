@@ -39,21 +39,21 @@
 ;; App
 
 (defn annotate-editor
-  [item index]
+  [index item]
   (nm "span" " editor "))
 
 (defn annotate-button
-  [item index]
+  [index item]
   (if (= (get item "type") "blob")
     (nm "button.pure-button" {:onclick #(edit item index)} "Annotate")))
 
 (defn annotate
-  [item index]
+  [index item]
   (let [editor (querydb [:editor])
         editing (get editor index)]
     (if (nil? editing)
-      (annotate-button item index)
-      (annotate-editor item index))))
+      (annotate-button index item)
+      (annotate-editor index item))))
 
 (defn node
   "Renders one node from tree with indentation"
@@ -62,19 +62,22 @@
         parts (clojure.string/split path "/")
         level (count parts)
         base (last parts)]
-    (nm (str "div.level" level) [base (annotate item index)])))
+    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-md-1-2" [(nm (str "div.level" level) base)])
+                      (nm "div.pure-u-1.pure-u-md-1-2" [(annotate index item)])])))
 
 (defn reporender
   "Render repository trees"
   []
-  (map-indexed node (get (querydb [:data]) "tree")))
+  (let [tree (get (querydb [:data]) "tree")]
+    (map-indexed node tree)))
+
 
 (defn ctrl [])
 
 (defn viewer
   [ctrl]
   (nm "div" [(nm "h1" "RepoDoc App")
-             (nm "div" (reporender))]))
+             (reporender)]))
 
 
 ;; Setup
