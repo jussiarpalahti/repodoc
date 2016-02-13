@@ -26,8 +26,10 @@
 (defn node
   [item]
   (let [path (get item "path")
-        level (count (clojure.string/split path "/"))]
-    (nm (str "div.level" level) path)))
+        parts (clojure.string/split path "/")
+        level (count parts)
+        base (last parts)]
+    (nm (str "div.level" level) base)))
 
 (defn reporender
   [data]
