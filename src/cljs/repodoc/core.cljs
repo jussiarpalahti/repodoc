@@ -23,17 +23,22 @@
 
 ;; App
 
+(defn node
+  [item]
+  (let [path (get item "path")
+        level (count (clojure.string/split path "/"))]
+    (nm (str "div.level" level) path)))
+
 (defn reporender
   [data]
-  (map (fn [item]
-         (nm "div" (get item "path")))
-       (get data "tree")))
+  (map node (get data "tree")))
 
 (defn ctrl []
   {:db REPO})
 
 (defn viewer
   [ctrl]
+  (println "rendering")
   (nm "div" [(nm "h1" "RepoDoc App")
              (nm "div" (reporender (:db ctrl)))]))
 

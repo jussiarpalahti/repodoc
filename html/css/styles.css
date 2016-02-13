@@ -4,6 +4,22 @@ html {
 	background-color: rgba(255, 227, 189, 0.43);
 }
 
+.level1 {
+	margin-left: 1em;
+}
+
+.level2 {
+	margin-left: 2em;
+}
+
+.level3 {
+	margin-left: 3em;
+}
+
+.level4 {
+	margin-left: 4em;
+}
+
 #nav div, #pages {
 	margin: 0.2em 0.1em;
 }
