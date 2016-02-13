@@ -1,0 +1,4 @@
+
+{:require [repodoc.core]
+ :compiler-options {:asset-path "js/main.out"
+                    :parallel-build true}}
