@@ -11,6 +11,7 @@
                  [com.cemerick/piggieback "0.2.1"]     ;; needed by bREPL
                  [weasel "0.7.0"]                      ;; needed by bREPL
                  [org.clojure/tools.nrepl "0.2.12"]    ;; needed by bREPL
+                 [com.cognitect/transit-cljs "0.8.237"] ;; Transit for data
                 ])
 
 (require '[adzerk.boot-cljs :refer [cljs]]
