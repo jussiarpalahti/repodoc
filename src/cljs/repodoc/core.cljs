@@ -20,13 +20,40 @@
   (let [w (t/writer :json)]
     (t/write w data)))
 
+;; Data
+
+(def db {:data REPO
+         :start 0
+         :editor {}})
+
+(defn ^:export updatedb [fields value]
+  (set! db (assoc-in db fields value))
+  (.redraw js/m true))
+
+(defn querydb [fields]
+  (get-in db fields))
+
+(defn edit [item pos]
+  (updatedb [:editor] (assoc (querydb [:editor]) pos item)))
 
 ;; App
 
-(defn annotate
+(defn annotate-editor
+  [item index]
+  (nm "span" " editor "))
+
+(defn annotate-button
   [item index]
   (if (= (get item "type") "blob")
-    (nm "button.pure-button" "Annotate")))
+    (nm "button.pure-button" {:onclick #(edit item index)} "Annotate")))
+
+(defn annotate
+  [item index]
+  (let [editor (querydb [:editor])
+        editing (get editor index)]
+    (if (nil? editing)
+      (annotate-button item index)
+      (annotate-editor item index))))
 
 (defn node
   "Renders one node from tree with indentation"
@@ -39,17 +66,15 @@
 
 (defn reporender
   "Render repository trees"
-  [data]
-  (map-indexed node (get data "tree")))
+  []
+  (map-indexed node (get (querydb [:data]) "tree")))
 
-(defn ctrl []
-  {:db REPO})
+(defn ctrl [])
 
 (defn viewer
   [ctrl]
-  (println "rendering")
   (nm "div" [(nm "h1" "RepoDoc App")
-             (nm "div" (reporender (:db ctrl)))]))
+             (nm "div" (reporender))]))
 
 
 ;; Setup
@@ -57,7 +82,7 @@
 (def app {:controller ctrl :view viewer})
 
 (defn setup []
-  (.render js/m
+  (.mount js/m
            (.getElementById js/document "app")
            (clj->js app)))
 
