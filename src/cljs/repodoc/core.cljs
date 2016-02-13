@@ -23,17 +23,24 @@
 
 ;; App
 
+(defn annotate
+  [item index]
+  (if (= (get item "type") "blob")
+    (nm "button.pure-button" "Annotate")))
+
 (defn node
-  [item]
+  "Renders one node from tree with indentation"
+  [index item]
   (let [path (get item "path")
         parts (clojure.string/split path "/")
         level (count parts)
         base (last parts)]
-    (nm (str "div.level" level) base)))
+    (nm (str "div.level" level) [base (annotate item index)])))
 
 (defn reporender
+  "Render repository trees"
   [data]
-  (map node (get data "tree")))
+  (map-indexed node (get data "tree")))
 
 (defn ctrl []
   {:db REPO})

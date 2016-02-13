@@ -5,23 +5,28 @@ html {
 }
 
 .level1 {
-	margin-left: 1em;
+	margin: 0.3em 1em;
 }
 
 .level2 {
-	margin-left: 2em;
+	margin: 0.3em 2em;
 }
 
 .level3 {
-	margin-left: 3em;
+	margin: 0.3em 3em;
 }
 
 .level4 {
-	margin-left: 4em;
+	margin: 0.3em 4em;
 }
 
 #nav div, #pages {
 	margin: 0.2em 0.1em;
+}
+
+button.pure-button {
+	padding: 0.3em;
+	margin: 0 0.5em;
 }
 
 #editor input, #editor button {
