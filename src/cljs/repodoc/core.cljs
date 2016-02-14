@@ -23,7 +23,7 @@
 
 ;; Data
 
-(def db {:data REPO
+(def db {:data (get REPO "tree")
          :start 0
          :editing #{}})
 
@@ -38,16 +38,18 @@
   (let [editing (querydb [:editing])]
     (updatedb [:editing] (conj editing pos))))
 
-(defn update_field [pos key value]
-  (let [item (assoc (querydb [:data pos]) key value)]
-    (set! db (assoc-in db [:data pos] item))))
-
 (defn save [item pos]
   "Save item to db :data into position"
   (let [doc (assoc item "mtime" (str (new js/Date)))
         data (querydb [:data])]
     (updatedb [:data] (assoc data pos doc))
     (println "Saved!" (get doc "path"))))
+
+(defn update_field [pos key value]
+  (let [prev (querydb [:data pos])
+        item (assoc prev key value)]
+    (println "Editing: " pos key value)
+    (save item pos)))
 
 (defn close
   [pos]
@@ -76,7 +78,7 @@
 (defn annotate-editor
   [pos item]
   (let [title (get item "title")]
-    (nm "div" [(e/text "title" title 40 #(update_field "title" pos %))])))
+    (nm "div" [(e/text "title" title 40 #(update_field pos "title" %))])))
 
 (defn annotate-button
   [pos item]
@@ -106,7 +108,7 @@
 (defn reporender
   "Render repository trees"
   []
-  (let [tree (get (querydb [:data]) "tree")]
+  (let [tree (querydb [:data])]
     (map-indexed node tree)))
 
 
