@@ -49,6 +49,11 @@
     (updatedb [:data] (assoc data pos doc))
     (println "Saved!" (get doc "path"))))
 
+(defn close
+  [pos]
+  (let [editing (querydb [:editing])]
+    (updatedb [:editing] (disj editing pos))))
+
 ;; Utils
 
 (defn blob?
@@ -82,7 +87,10 @@
   [index item]
   (if (false? (editing? index))
       (nm "div.pure-u-1.pure-u-sm-1-2" [(annotate-button index item)])
-      (nm "div.pure-u-1-1.pure-u-sm-1" [(annotate-editor index item)])))
+      [(nm "div.pure-u-1.pure-u-sm-1-2"
+           [(nm "button.pure-button" {:onclick #(close index)} "Close")])
+       (nm "div.pure-u-1-1.pure-u-sm-1"
+           [(annotate-editor index item)])]))
 
 (defn node
   "Renders one node from tree with indentation"
