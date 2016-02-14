@@ -24,11 +24,6 @@ html {
 	margin: 0.2em 0.1em;
 }
 
-button.pure-button {
-	padding: 0.3em;
-	margin: 0 0.5em;
-}
-
 #editor input, #editor button {
 	margin: 0.1em;
 }

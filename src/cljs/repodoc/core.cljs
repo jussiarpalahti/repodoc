@@ -36,11 +36,20 @@
 (defn edit [item pos]
   (updatedb [:editor] (assoc (querydb [:editor]) pos item)))
 
+(defn update_field [id value]
+  (set! db (assoc-in db [:editor id] value)))
+
 ;; App
 
+(defn text [id name value size]
+  (nm "input[type=text]"
+      {:value value :placeholder name :size size
+       :onchange #(update_field id (-> % .-target .-value))}))
+
 (defn annotate-editor
-  [index item]
-  (nm "span" " editor "))
+  [index item editing]
+  (let [title (get editing "title")]
+    (nm "div" [(text index "title" title 40)])))
 
 (defn annotate-button
   [index item]
@@ -52,8 +61,8 @@
   (let [editor (querydb [:editor])
         editing (get editor index)]
     (if (nil? editing)
-      (annotate-button index item)
-      (annotate-editor index item))))
+      (nm "div.pure-u-1.pure-u-sm-1-2" [(annotate-button index item)])
+      (nm "div.pure-u-1-1.pure-u-sm-1" [(annotate-editor index item editing)]))))
 
 (defn node
   "Renders one node from tree with indentation"
@@ -62,8 +71,8 @@
         parts (clojure.string/split path "/")
         level (count parts)
         base (last parts)]
-    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-md-1-2" [(nm (str "div.level" level) base)])
-                      (nm "div.pure-u-1.pure-u-md-1-2" [(annotate index item)])])))
+    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-sm-1-2" [(nm (str "div.level" level) base)])
+                      (annotate index item)])))
 
 (defn reporender
   "Render repository trees"
