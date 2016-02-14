@@ -25,7 +25,8 @@
 
 (def db {:data (get REPO "tree")
          :start 0
-         :editing #{}})
+         :editing #{}
+         :opened #{}})
 
 (defn ^:export updatedb [fields value]
   (set! db (assoc-in db fields value))
@@ -33,6 +34,23 @@
 
 (defn querydb [fields]
   (get-in db fields))
+
+
+;; Utils
+
+(defn blob?
+  [item]
+  (if (= (get item "type") "blob") true false))
+
+(defn editing?
+  [pos]
+  (contains? (querydb [:editing]) pos))
+
+(defn opened?
+  [pos]
+  (contains? (querydb [:opened]) pos))
+
+;; Handlers
 
 (defn edit [pos]
   (let [editing (querydb [:editing])]
@@ -51,20 +69,18 @@
     (println "Editing: " pos key value)
     (save item pos)))
 
-(defn close
+(defn toggle-item-detail
+  [pos]
+  (let [opened (querydb [:opened])]
+    (if (contains? opened pos)
+      (updatedb [:opened] (disj opened pos))
+      (updatedb [:opened] (conj opened pos)))))
+
+(defn close-editor
   [pos]
   (let [editing (querydb [:editing])]
-    (updatedb [:editing] (disj editing pos))))
-
-;; Utils
-
-(defn blob?
-  [item]
-  (if (= (get item "type") "blob") true false))
-
-(defn editing?
-  [pos]
-  (contains? (querydb [:editing]) pos))
+    (updatedb [:editing] (disj editing pos))
+    (if (opened? pos) (toggle-item-detail pos))))
 
 ;; App
 
@@ -78,6 +94,7 @@
 (defn annotate-editor
   [pos item]
   (let [title (get item "title")]
+    (if (not (opened? pos)) (toggle-item-detail pos))
     (nm "div" [(e/text "title" title 40 #(update_field pos "title" %))])))
 
 (defn annotate-button
@@ -86,13 +103,19 @@
     (nm "button.pure-button" {:onclick #(edit pos)} "Annotate")))
 
 (defn annotate
-  [index item]
-  (if (false? (editing? index))
-      (nm "div.pure-u-1.pure-u-sm-1-2" [(annotate-button index item)])
+  [pos item]
+  (if (false? (editing? pos))
+      (nm "div.pure-u-1.pure-u-sm-1-2" [(annotate-button pos item)])
       [(nm "div.pure-u-1.pure-u-sm-1-2"
-           [(nm "button.pure-button" {:onclick #(close index)} "Close")])
+           [(nm "button.pure-button" {:onclick #(close-editor pos)} "Close")])
        (nm "div.pure-u-1-1.pure-u-sm-1"
-           [(annotate-editor index item)])]))
+           [(annotate-editor pos item)])]))
+
+(defn item-detail
+  [pos item]
+  (if (and (get item "mtime" false) (opened? pos))
+    (let [title (get item "title")]
+      (nm "div.pure-u-1-1.pure-u-sm-1" title))))
 
 (defn node
   "Renders one node from tree with indentation"
@@ -102,8 +125,10 @@
         level (count parts)
         base (last parts)
         icon (if (blob? item) (ftype-to-icon base) (nm "i.ftype.fa.fa-folder-open-o"))]
-    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-sm-1-2" [(nm (str "div.level" level) [icon base])])
-                      (annotate index item)])))
+    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-sm-1-2"
+                          [(nm (str "div.level" level) {:onclick #(toggle-item-detail index)} [icon base])])
+                      (annotate index item)
+                      (item-detail index item)])))
 
 (defn reporender
   "Render repository trees"
