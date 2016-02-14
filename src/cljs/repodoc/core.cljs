@@ -25,7 +25,7 @@
 
 (def db {:data REPO
          :start 0
-         :editor {}})
+         :editing #{}})
 
 (defn ^:export updatedb [fields value]
   (set! db (assoc-in db fields value))
@@ -34,9 +34,9 @@
 (defn querydb [fields]
   (get-in db fields))
 
-(defn edit [item pos]
-  (let [data (querydb [:data])]
-    (updatedb [:data] (assoc data pos item))))
+(defn edit [pos]
+  (let [editing (querydb [:editing])]
+    (updatedb [:editing] (conj editing pos))))
 
 (defn update_field [pos key value]
   (let [item (assoc (querydb [:data pos]) key value)]
@@ -55,6 +55,10 @@
   [item]
   (if (= (get item "type") "blob") true false))
 
+(defn editing?
+  [pos]
+  (contains? (querydb [:editing]) pos))
+
 ;; App
 
 (defn ftype-to-icon
@@ -65,22 +69,20 @@
       (nm (str "i.ftype." ftype)))))
 
 (defn annotate-editor
-  [index item editing]
-  (let [title (get editing "title")]
-    (nm "div" [(e/text "title" title 40 #(update_field "title" index %))])))
+  [pos item]
+  (let [title (get item "title")]
+    (nm "div" [(e/text "title" title 40 #(update_field "title" pos %))])))
 
 (defn annotate-button
   [pos item]
   (if (blob? item)
-    (nm "button.pure-button" {:onclick #(edit item pos)} "Annotate")))
+    (nm "button.pure-button" {:onclick #(edit pos)} "Annotate")))
 
 (defn annotate
   [index item]
-  (let [editor (querydb [:editor])
-        editing (get editor index)]
-    (if (nil? editing)
+  (if (false? (editing? index))
       (nm "div.pure-u-1.pure-u-sm-1-2" [(annotate-button index item)])
-      (nm "div.pure-u-1-1.pure-u-sm-1" [(annotate-editor index item editing)]))))
+      (nm "div.pure-u-1-1.pure-u-sm-1" [(annotate-editor index item)])))
 
 (defn node
   "Renders one node from tree with indentation"
