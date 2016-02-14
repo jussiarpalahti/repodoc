@@ -6,6 +6,7 @@
     [goog.i18n.DateTimeFormat :as dtf]
     [repodoc.data :refer [REPO]]
     [repodoc.fathom :refer [nm]]
+    [repodoc.editor :as e]
     ))
 
 (enable-console-print!)
@@ -41,15 +42,10 @@
 
 ;; App
 
-(defn text [id name value size]
-  (nm "input[type=text]"
-      {:value value :placeholder name :size size
-       :onchange #(update_field id (-> % .-target .-value))}))
-
 (defn annotate-editor
   [index item editing]
   (let [title (get editing "title")]
-    (nm "div" [(text index "title" title 40)])))
+    (nm "div" [(e/text "title" title 40 #(update_field index %))])))
 
 (defn annotate-button
   [index item]
