@@ -35,10 +35,19 @@
   (get-in db fields))
 
 (defn edit [item pos]
-  (updatedb [:editor] (assoc (querydb [:editor]) pos item)))
+  (let [data (querydb [:data])]
+    (updatedb [:data] (assoc data pos item))))
 
-(defn update_field [id value]
-  (set! db (assoc-in db [:editor id] value)))
+(defn update_field [pos key value]
+  (let [item (assoc (querydb [:data pos]) key value)]
+    (set! db (assoc-in db [:data pos] item))))
+
+(defn save [item pos]
+  "Save item to db :data into position"
+  (let [doc (assoc item "mtime" (str (new js/Date)))
+        data (querydb [:data])]
+    (updatedb [:data] (assoc data pos doc))
+    (println "Saved!" (get doc "path"))))
 
 ;; Utils
 
@@ -58,12 +67,12 @@
 (defn annotate-editor
   [index item editing]
   (let [title (get editing "title")]
-    (nm "div" [(e/text "title" title 40 #(update_field index %))])))
+    (nm "div" [(e/text "title" title 40 #(update_field "title" index %))])))
 
 (defn annotate-button
-  [index item]
+  [pos item]
   (if (blob? item)
-    (nm "button.pure-button" {:onclick #(edit item index)} "Annotate")))
+    (nm "button.pure-button" {:onclick #(edit item pos)} "Annotate")))
 
 (defn annotate
   [index item]
