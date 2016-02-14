@@ -4,6 +4,18 @@
 ;; https://api.github.com/repos/jussiarpalahti/repodoc/git/trees/e6e07747a09cabec141a3ba0161537e51eb40b2e?recursive=1
 ;; this being the first commit is this app's repo
 
+;; Mapping between filetype suffix and CSS class
+;; Used for http://fizzed.com/oss/font-mfizz and http://fortawesome.github.io/Font-Awesome icons
+
+(def FILETYPES {"cljs" "icon-clojure"
+                "py" "icon-python"
+                "sh" "icon-shell"
+                "js" "icon-javascript"
+                "css" "icon-css"
+                "edn" "icon-clojure"
+                "md" "fa.fa-file-text-o"
+                "html" "icon-html"})
+
 (def REPO
   {"sha" "e6e07747a09cabec141a3ba0161537e51eb40b2e",
    "url" "https://api.github.com/repos/jussiarpalahti/repodoc/git/trees/e6e07747a09cabec141a3ba0161537e51eb40b2e",
@@ -48,6 +60,11 @@
           "sha" "f7928c5c69b115b9d7be73b4d0637484dab44349",
           "size" 779,
           "url" "https://api.github.com/repos/jussiarpalahti/repodoc/git/blobs/f7928c5c69b115b9d7be73b4d0637484dab44349"}
+         {"path" "html/index.html",
+          "mode" "040000",
+          "type" "blob",
+          "sha" "56ed7fd961bf7da94c1f7bc2c02fd5bd39dbfd61",
+          "url" "https://api.github.com/repos/jussiarpalahti/repodoc/git/trees/56ed7fd961bf7da94c1f7bc2c02fd5bd39dbfd61"}
          {"path" "html/js",
           "mode" "040000",
           "type" "tree",

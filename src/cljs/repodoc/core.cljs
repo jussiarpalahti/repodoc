@@ -4,7 +4,7 @@
     [cognitect.transit :as t]
     [m]
     [goog.i18n.DateTimeFormat :as dtf]
-    [repodoc.data :refer [REPO]]
+    [repodoc.data :refer [REPO FILETYPES]]
     [repodoc.fathom :refer [nm]]
     [repodoc.editor :as e]
     ))
@@ -40,7 +40,20 @@
 (defn update_field [id value]
   (set! db (assoc-in db [:editor id] value)))
 
+;; Utils
+
+(defn blob?
+  [item]
+  (if (= (get item "type") "blob") true false))
+
 ;; App
+
+(defn ftype-to-icon
+  [base]
+  (let [suffix (last (clojure.string/split base "."))
+        ftype (get FILETYPES suffix)]
+    (if (not (nil? ftype))
+      (nm (str "i.ftype." ftype)))))
 
 (defn annotate-editor
   [index item editing]
@@ -49,7 +62,7 @@
 
 (defn annotate-button
   [index item]
-  (if (= (get item "type") "blob")
+  (if (blob? item)
     (nm "button.pure-button" {:onclick #(edit item index)} "Annotate")))
 
 (defn annotate
@@ -66,8 +79,9 @@
   (let [path (get item "path")
         parts (clojure.string/split path "/")
         level (count parts)
-        base (last parts)]
-    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-sm-1-2" [(nm (str "div.level" level) base)])
+        base (last parts)
+        icon (if (blob? item) (ftype-to-icon base) (nm "i.ftype.fa.fa-folder-open-o"))]
+    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-sm-1-2" [(nm (str "div.level" level) [icon base])])
                       (annotate index item)])))
 
 (defn reporender
