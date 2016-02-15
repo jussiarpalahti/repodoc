@@ -40,6 +40,14 @@ div.pure-g div {
 	background-color: goldenrod;
 }
 
+#serialization textarea {
+	width: 90%;
+	height: 90%;
+	background-color: goldenrod;
+	margin: 1em 2em;
+	border: 1px dashed;
+}
+
 #nav div, #pages {
 	margin: 0.2em 0.1em;
 }

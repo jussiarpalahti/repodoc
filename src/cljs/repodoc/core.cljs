@@ -168,8 +168,9 @@
 (defn serialization
   []
   (if (querydb [:serialized])
-    (nm "#serialization" [(nm "div" [(nm "button.pure-button" {:onclick #(toggle-serialization)} "Close")])
-                          (nm "pre" (serialize-db))])))
+    (nm "#serialization" [(nm "div" [(nm "button.pure-button" {:onclick #(toggle-serialization)} "Close")
+                                     " Click the text area and select text"])
+                          (nm "textarea" (serialize-db))])))
 
 (defn reporender
   "Render repository trees"
