@@ -11,6 +11,12 @@
 
 (enable-console-print!)
 
+;
+; Constants
+;
+(def ^:const DATEFORMAT "d.M.yyyy H:mm")
+
+
 ;; Transito functions
 
 (defn read [data]
@@ -37,6 +43,11 @@
 
 
 ;; Utils
+
+(defn format_time [d format]
+  "Render instance of js/Date according to format"
+  (let [format (new goog.i18n.DateTimeFormat format)]
+    (.format format d)))
 
 (defn blob?
   [item]
@@ -105,8 +116,8 @@
 (defn annotate
   [pos item]
   (if (false? (editing? pos))
-      (nm "div.pure-u-1.pure-u-sm-1-2" [(annotate-button pos item)])
-      [(nm "div.pure-u-1.pure-u-sm-1-2"
+      (nm "div.pure-u-1.pure-u-sm-1-5" [(annotate-button pos item)])
+      [(nm "div.pure-u-1.pure-u-sm-1-5"
            [(nm "button.pure-button" {:onclick #(close-editor pos)} "Close")])
        (nm "div.pure-u-1-1.pure-u-sm-1"
            [(annotate-editor pos item)])]))
@@ -114,8 +125,8 @@
 (defn item-detail
   [pos item]
   (if (and (get item "mtime" false) (opened? pos))
-    (let [title (get item "title")]
-      (nm "div.pure-u-1-1.pure-u-sm-1" title))))
+    (let [mtime (get item "mtime")]
+      (nm "div.pure-u-1-1.pure-u-sm-1" (format_time (new js/Date mtime) DATEFORMAT)))))
 
 (defn node
   "Renders one node from tree with indentation"
@@ -124,9 +135,11 @@
         parts (clojure.string/split path "/")
         level (count parts)
         base (last parts)
-        icon (if (blob? item) (ftype-to-icon base) (nm "i.ftype.fa.fa-folder-open-o"))]
-    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-sm-1-2"
+        icon (if (blob? item) (ftype-to-icon base) (nm "i.ftype.fa.fa-folder-open-o"))
+        title (get item "title")]
+    (nm "div.pure-g" [(nm "div.pure-u-1.pure-u-sm-2-5"
                           [(nm (str "div.level" level) {:onclick #(toggle-item-detail index)} [icon base])])
+                      (nm "div.pure-u-1-2.pure-u-sm-2-5" {:onclick #(toggle-item-detail index)} title)
                       (annotate index item)
                       (item-detail index item)])))
 

@@ -21,6 +21,8 @@
    "url" "https://api.github.com/repos/jussiarpalahti/repodoc/git/trees/e6e07747a09cabec141a3ba0161537e51eb40b2e",
    "truncated" false,
    "tree" [{"path" "LICENSE",
+          "title" "asdfadsf",
+          "mtime" "Mon Feb 15 2016 21:33:12 GMT+0200 (EET)"
           "mode" "100644",
           "type" "blob",
           "sha" "a612ad9813b006ce81d1ee438dd784da99a54007",
