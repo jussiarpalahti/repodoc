@@ -7,6 +7,7 @@
     [repodoc.data :refer [REPO FILETYPES]]
     [repodoc.fathom :refer [nm]]
     [repodoc.editor :as e]
+    [cljs.pprint :refer [pprint]]
     ))
 
 (enable-console-print!)
@@ -32,7 +33,8 @@
 (def db {:data (get REPO "tree")
          :start 0
          :editing #{}
-         :opened #{}})
+         :opened #{}
+         :serialized false})
 
 (defn ^:export updatedb [fields value]
   (set! db (assoc-in db fields value))
@@ -40,6 +42,17 @@
 
 (defn querydb [fields]
   (get-in db fields))
+
+(defn serialize-db
+  "Serialize annotated items into vector of maps"
+  []
+  (with-out-str (cljs.pprint/pprint
+                  (vec (map
+                      (fn [item]
+                        {:path (get item "path")
+                        :title (get item "title")
+                        :mtime (get item "mtime")})
+                      (filter #(get % "mtime") (querydb [:data])))))))
 
 
 ;; Utils
@@ -93,6 +106,13 @@
     (updatedb [:editing] (disj editing pos))
     (if (opened? pos) (toggle-item-detail pos))))
 
+(defn toggle-serialization
+  "Open serialization modal"
+  []
+  (if (querydb [:serialized])
+    (updatedb [:serialized] false)
+    (updatedb [:serialized] true)))
+
 ;; App
 
 (defn ftype-to-icon
@@ -126,7 +146,8 @@
   [pos item]
   (if (and (get item "mtime" false) (opened? pos))
     (let [mtime (get item "mtime")]
-      (nm "div.pure-u-1-1.pure-u-sm-1" (format_time (new js/Date mtime) DATEFORMAT)))))
+      (nm "div.pure-u-1-1.pure-u-sm-1"
+          ["Modification time:" (format_time (new js/Date mtime) DATEFORMAT)]))))
 
 (defn node
   "Renders one node from tree with indentation"
@@ -143,19 +164,31 @@
                       (annotate index item)
                       (item-detail index item)])))
 
+(defn serialization
+  []
+  (if (querydb [:serialized])
+    (nm "#serialization" [(nm "div" [(nm "button.pure-button" {:onclick #(toggle-serialization)} "Close")])
+                          (nm "pre" (serialize-db))])))
+
 (defn reporender
   "Render repository trees"
   []
   (let [tree (querydb [:data])]
     (map-indexed node tree)))
 
+(defn toolbar
+  "Toolbar contains buttons for app wide functions"
+  []
+  (nm "div.toolbar" [(nm "button.pure-button" {:onclick #(toggle-serialization)} "Export")]))
 
 (defn ctrl [])
 
 (defn viewer
   [ctrl]
   (nm "div" [(nm "h1" "RepoDoc App")
-             (reporender)]))
+             (toolbar)
+             (reporender)
+             (serialization)]))
 
 
 ;; Setup

@@ -30,6 +30,16 @@ div.pure-g div {
 	margin-right: 0.3em;
 }
 
+#serialization {
+	width: 80%;
+	height: 80%;
+	position: absolute;
+	overflow: auto;
+	top: 10%;
+	left: 10%;
+	background-color: goldenrod;
+}
+
 #nav div, #pages {
 	margin: 0.2em 0.1em;
 }
