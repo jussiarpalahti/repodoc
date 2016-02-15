@@ -46,14 +46,15 @@
 (defn serialize-db
   "Serialize annotated items into vector of maps"
   []
-  (with-out-str (cljs.pprint/pprint
-                  (vec (map
-                      (fn [item]
-                        {:path (get item "path")
-                        :title (get item "title")
-                        :mtime (get item "mtime")})
-                      (filter #(get % "mtime") (querydb [:data])))))))
-
+  (with-out-str
+    (cljs.pprint/pprint
+        (vec
+          (map
+            (fn [item]
+              {:path (get item "path")
+              :title (get item "title")
+              :mtime (get item "mtime")})
+            (filter #(get % "mtime") (querydb [:data])))))))
 
 ;; Utils
 
