@@ -8,6 +8,7 @@
     [repodoc.fathom :refer [nm]]
     [repodoc.editor :as e]
     [cljs.pprint :refer [pprint]]
+    [markdown.core :as md]
     ))
 
 (enable-console-print!)
@@ -16,45 +17,9 @@
 ; Constants
 ;
 (def ^:const DATEFORMAT "d.M.yyyy H:mm")
-
-
-;; Transito functions
-
-(defn read [data]
-  (let [r (t/reader :json)]
-    (t/read r data)))
-
-(defn write [data]
-  (let [w (t/writer :json)]
-    (t/write w data)))
-
-;; Data
-
-(def db {:data (get REPO "tree")
-         :start 0
-         :editing #{}
-         :opened #{}
-         :serialized false})
-
-(defn ^:export updatedb [fields value]
-  (set! db (assoc-in db fields value))
-  (.redraw js/m true))
-
-(defn querydb [fields]
-  (get-in db fields))
-
-(defn serialize-db
-  "Serialize annotated items into vector of maps"
-  []
-  (with-out-str
-    (cljs.pprint/pprint
-        (vec
-          (map
-            (fn [item]
-              {:path (get item "path")
-              :title (get item "title")
-              :mtime (get item "mtime")})
-            (filter #(get % "mtime") (querydb [:data])))))))
+(declare serialize-md)
+(declare serialize-edn)
+(declare querydb)
 
 ;; Utils
 
@@ -74,6 +39,74 @@
 (defn opened?
   [pos]
   (contains? (querydb [:opened]) pos))
+
+;; Transito functions
+
+(defn read [data]
+  (let [r (t/reader :json)]
+    (t/read r data)))
+
+(defn write [data]
+  (let [w (t/writer :json)]
+    (t/write w data)))
+
+;; Data
+
+(def db {:data (get REPO "tree")
+         :start 0
+         :editing #{}
+         :opened #{}
+         :serialized false
+         :serializer serialize-edn})
+
+(defn ^:export updatedb [fields value]
+  (set! db (assoc-in db fields value))
+  (.redraw js/m true))
+
+(defn querydb [fields]
+  (get-in db fields))
+
+(defn serialize-edn
+  "Serialize annotated items as string"
+  [data]
+  (with-out-str (cljs.pprint/pprint data)))
+
+(defn parts-to-md-list
+  [parts]
+  (clojure.string/join
+    "\n"
+    (map-indexed
+      (fn [level part]
+        (str (clojure.string/join (repeat level " "))
+             " * " part))
+      parts)))
+
+(defn serialize-md
+  "Serialize annotated items as Markdown"
+  [data]
+  (clojure.string/join (map
+         (fn [item]
+           (let [path (:path item)
+                 parts (clojure.string/split path "/")
+                 level (count parts)
+                 base (last parts)]
+             (str
+               (parts-to-md-list parts)
+               " | " (:title item) " | "
+               (format_time (new js/Date (:mtime item)) DATEFORMAT)
+               "\n")))
+         data)))
+
+(defn serialize-db
+  [serializer]
+  (serializer
+    (vec
+      (map
+        (fn [item]
+          {:path (get item "path")
+           :title (get item "title")
+           :mtime (get item "mtime")})
+        (filter #(get % "mtime") (querydb [:data]))))))
 
 ;; Handlers
 
@@ -113,6 +146,10 @@
   (if (querydb [:serialized])
     (updatedb [:serialized] false)
     (updatedb [:serialized] true)))
+
+(defn set_serialize
+  [serializer]
+  (updatedb [:serializer] serializer))
 
 ;; App
 
@@ -167,10 +204,17 @@
 
 (defn serialization
   []
-  (if (querydb [:serialized])
-    (nm "#serialization" [(nm "div" [(nm "button.pure-button" {:onclick #(toggle-serialization)} "Close")
-                                     " Click the text area and select text"])
-                          (nm "textarea" (serialize-db))])))
+  (let [serialize (querydb [:serialized])
+        serializer (querydb [:serializer])]
+    (if serialize
+      (nm "#serialization" [(nm "div" [(nm "button.pure-button"
+                                           {:onclick #(toggle-serialization)} "Close")
+                                       (nm "button.pure-button"
+                                           {:onclick #(set_serialize serialize-edn)} "EDN")
+                                       (nm "button.pure-button"
+                                           {:onclick #(set_serialize serialize-md)} "Markdown")
+                                       " Click the text area and select text"])
+                            (nm "textarea" (serialize-db serializer))]))))
 
 (defn reporender
   "Render repository trees"
