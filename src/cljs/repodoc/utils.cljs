@@ -141,3 +141,13 @@
   (map #(str "/" (clojure.string/join "/" %))
        (sort-paths
          (expand-paths paths))))
+
+(defn create-git-tree
+  "Creates a list of maps for
+  paths and their files"
+  [paths]
+  (let [dirfiles (path-reduce paths)
+        paths (pathify (keys dirfiles))]
+    (map (fn [p]
+           {p (get dirfiles p)})
+         paths)))
