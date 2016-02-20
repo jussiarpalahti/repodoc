@@ -113,7 +113,7 @@
   /a/b/c -> [/a /a/b /a/b/c]"
   [path]
   (let
-    [[_ & dirs] (clojure.string/split path #"/")]
+    [[_ & dirs] (clojure.string/split path #"/")] ;; Root path turns to ""
     (reduce
       (fn [acc p]
         (cond
@@ -133,3 +133,11 @@
       (map
         parent-paths
         paths))))
+
+(defn pathify
+  "Generate actual paths from components
+  by adding path separator"
+  [paths]
+  (map #(str "/" (clojure.string/join "/" %))
+       (sort-paths
+         (expand-paths paths))))
