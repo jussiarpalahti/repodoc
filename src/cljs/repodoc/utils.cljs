@@ -98,3 +98,38 @@
   equal"
   [paths]
   (sort #(apply compare (cut-vec %1 %2)) paths))
+
+(defn string-rsplit
+  "Split string from right to left
+  returning items original order"
+  [s & args]
+  (reverse
+    (map clojure.string/reverse
+         (apply clojure.string/split (clojure.string/reverse s) args))))
+
+(defn parent-paths
+  "Return a list of given path's
+  parents starting from root downward
+  /a/b/c -> [/a /a/b /a/b/c]"
+  [path]
+  (let
+    [[_ & dirs] (clojure.string/split path #"/")]
+    (reduce
+      (fn [acc p]
+        (cond
+          (nil? acc) [[p]]
+          :else (conj acc (conj (last acc) p))))
+      nil
+      dirs)))
+
+(defn expand-paths
+  "Generates a list of unique
+  paths from given paths
+  [/a/b/c /a/c /a/d] ->
+  [/a /a/b /a/b/c /a/c /a/d]"
+  [paths]
+  (distinct
+    (apply concat
+      (map
+        parent-paths
+        paths))))
