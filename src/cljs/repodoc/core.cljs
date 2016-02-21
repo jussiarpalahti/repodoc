@@ -5,7 +5,7 @@
     [m]
     [goog.i18n.DateTimeFormat :as dtf]
     [repodoc.data :refer [REPO FILETYPES]]
-    [repodoc.fathom :refer [nm]]
+    [repodoc.fathom :refer [nm request]]
     [repodoc.utils :refer [serialize-md serialize-edn serialize-html serialize format_time]]
     [repodoc.editor :as e]
     [devtools.core :as devtools]
@@ -209,7 +209,8 @@
 
 (defn fetch_repositories
   [db username]
-  (let [repourl (str "https://api.github.com/users/" username "/repos/")]))
+  (let [repourl (str "https://api.github.com/users/" username "/repos")]
+    (request {:url repourl}  #(println %))))
 
 (defn index_view
   [{:keys [username repositories]} ctrl]
@@ -219,8 +220,10 @@
                  [(nm "input"
                       {"placeholder" "Github username"
                        "value" username
-                       :onchange (e/text "username" username 40 #(fetch_repositories ctrl %))})
-                  (nm "div" "")])]))
+                       :onchange (e/text "username" username 40 #())})
+                  (nm "div" [
+                             (nm "button" {:onclick #(fetch_repositories ctrl username)} "Fetch")
+                             ])])]))
 
 ;; Setup
 
