@@ -207,15 +207,28 @@
              (reporender)
              (serialization)]))
 
+(defn fetch_repositories
+  [db username]
+  (let [repourl (str "https://api.github.com/users/" username "/repos/")]))
+
 (defn index_view
-  [ctrl]
-  (nm "h1" "index"))
+  [{:keys [username repositories]} ctrl]
+  (nm "div" [(nm "h1" "RepoDoc App")
+             (nm "h2" "Give username and choose your repository")
+             (nm "div"
+                 [(nm "input"
+                      {"placeholder" "Github username"
+                       "value" username
+                       :onchange (e/text "username" username 40 #(fetch_repositories ctrl %))})
+                  (nm "div" "")])]))
 
 ;; Setup
 
 (def repodoc {:controller ctrl :view viewer})
 
-(def index {:controller (fn [] []) :view index_view})
+(def index {:controller (fn [] {:username "jussiarpalahti"
+                                :repositories []})
+            :view index_view})
 
 ;; Routing mode
 (aset (.-route js/m) "mode" "hash")
@@ -231,6 +244,7 @@
 
 
 (setup)
+(.route js/m "/")
 
 ; To get REPL running
 ; (require 'cljs.repl)
