@@ -220,8 +220,8 @@
   (clojure.string/join (map
                          (fn [item]
                            (let [path (:path item)
-                                 parts (rest (clojure.string/split path "/"))
-                                 level (count parts)
+                                 parts (clojure.string/split path "/")
+                                 level (- (count parts) 2)
                                  base (last parts)]
                              (str
                                (clojure.string/join (repeat level "  "))
