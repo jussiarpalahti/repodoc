@@ -6,9 +6,8 @@
     [goog.i18n.DateTimeFormat :as dtf]
     [repodoc.data :refer [REPO FILETYPES]]
     [repodoc.fathom :refer [nm]]
-    [repodoc.utils :refer [serialize-md serialize-edn serialize format_time]]
+    [repodoc.utils :refer [serialize-md serialize-edn serialize-html serialize format_time]]
     [repodoc.editor :as e]
-    [markdown.core :as md]
     [devtools.core :as devtools]
     ))
 
@@ -36,6 +35,10 @@
 (defn opened?
   [pos]
   (contains? (querydb [:opened]) pos))
+
+(defn render-html
+  [data el init? ctx]
+  (aset el "innerHTML" data))
 
 ;; Transito functions
 
@@ -169,12 +172,18 @@
     (if serialize
       (nm "#serialization" [(nm "div" [(nm "button.pure-button"
                                            {:onclick #(toggle-serialization)} "Close")
+                                       " Export as: "
                                        (nm "button.pure-button"
                                            {:onclick #(set_serialize serialize-edn)} "EDN")
                                        (nm "button.pure-button"
                                            {:onclick #(set_serialize serialize-md)} "Markdown")
+                                       (nm "button.pure-button"
+                                           {:onclick #(set_serialize serialize-html)} "HTML")
                                        " Click the text area and select text"])
-                            (nm "textarea" (serialize-db serializer))]))))
+                            (if (= serializer serialize-html)
+                              (nm "div"
+                                  {"config" #(render-html (serialize-db serializer) %1 %2 %3)})
+                              (nm "textarea" (serialize-db serializer)))]))))
 
 (defn reporender
   "Render repository trees"

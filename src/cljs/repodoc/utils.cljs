@@ -2,6 +2,7 @@
   (:require
     [goog.i18n.DateTimeFormat :as dtf]
     [cljs.pprint :refer [pprint]]
+    [markdown.core :refer [md->html]]
   ))
 
 (def ^:const DATEFORMAT "d.M.yyyy H:mm")
@@ -235,6 +236,10 @@
 (defn serialize-md
   [data]
   (render-md (get-tree data)))
+
+(defn serialize-html
+  [data]
+  (md->html (serialize-md data)))
 
 (defn serialize
   [serializer data]
