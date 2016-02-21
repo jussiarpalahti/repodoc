@@ -1,4 +1,16 @@
-(ns repodoc.utils)
+(ns repodoc.utils
+  (:require
+    [goog.i18n.DateTimeFormat :as dtf]
+    [cljs.pprint :refer [pprint]]
+  ))
+
+(def ^:const DATEFORMAT "d.M.yyyy H:mm")
+
+(defn format_time
+  [d format]
+  "Render instance of js/Date according to format"
+  (let [format (new goog.i18n.DateTimeFormat format)]
+    (.format format d)))
 
 (defn dsu-sort
   "Decorate - sort - undecorate
@@ -18,7 +30,7 @@
   a map of given items' basenames
   using directory paths as keys"
   [acc item]
-  (let [path (get item "path")
+  (let [path (get item :path)
         parts (clojure.string/split path #"/")
         dirs (clojure.string/join "/" (butlast parts))
         dir (if (empty? dirs) "/" dirs)
@@ -58,7 +70,6 @@
 (defrecord TreeNode [val l r])
 
 (defn xconj [t v]
-  (println t v)
   (cond
     (nil? t)       (TreeNode. v nil nil)
     (< v (:val t)) (TreeNode. (:val t) (xconj (:l t) v) (:r t))
@@ -68,17 +79,14 @@
   (when t
     (concat (xseq (:l t)) [(:val t)] (xseq (:r t)))))
 
-(def sample-tree (reduce xconj nil [3 5 2 4 6]))
-(xseq sample-tree)
-
-(defrecord GitTree [name tree])
-
-(defn build-git-tree [t name tree]
-  "Build a tree node for given name
-  and add given list of names from the tree under it"
-  (cond
-    (nil? tree) (GitTree. name nil "blob")
-    :else (GitTree. name (map build-git-tree tree) "tree")))
+;(defrecord GitTree [name tree])
+;
+;(defn build-git-tree [t name tree]
+;  "Build a tree node for given name
+;  and add given list of names from the tree under it"
+;  (cond
+;    (nil? tree) (GitTree. name nil "blob")
+;    :else (GitTree. name (map build-git-tree tree) "tree")))
 
 (defn min-vec
   "Return largest vectors length"
@@ -158,7 +166,7 @@
     (flatten
       (into
         (map (fn [p]
-               {"path" p "type" "tree"}) paths)
+               {:path p "type" "tree"}) paths)
         (vals dirfiles)))))
 
 (defn vector-compare-2 [val1 val2]
@@ -166,13 +174,11 @@
   (let [value1 (first val1)
         value2 (first val2)
         result (apply compare (cut-vec value1 value2))]
-    (println result value1 (count value1) value2 (count value2))
     (cond
       (not (= result 0)) result
       (nil? value1) 0 ; value2 will be nil as well
       :else (let [c1 (count value1)
                   c2 (count value2)]
-              (println "sorting else" result value1 c1 value2 c2)
               (cond
                 (< c1 c2) -1
                 (> c1 c2) 1
@@ -181,6 +187,61 @@
 (defn sort-git-tree
   [tree]
   (dsu-sort-2
-    vector-compare
-    (fn [p] (let [[_ & dirs] (clojure.string/split (get p "path") #"/")] (vec dirs)))
+    vector-compare-2
+    (fn [p] (let [[_ & dirs] (clojure.string/split (get p :path) #"/")] (vec dirs)))
     tree))
+
+(defn get-tree
+  [paths]
+  (sort-git-tree (create-git-tree paths)))
+
+(defn serialize-edn
+  "Serialize annotated items as string"
+  [data]
+  (with-out-str (cljs.pprint/pprint data)))
+
+(defn parts-to-md-list
+  [parts]
+  (clojure.string/join
+    "\n"
+    (map-indexed
+      (fn [level part]
+        (str (clojure.string/join (repeat level " "))
+             " * " part))
+      parts)))
+
+(defn render-md
+  "
+  Render Markdown string from annotated items
+  TODO: Put files under folders, don't print their full tree for each item
+  "
+  [data]
+  (clojure.string/join (map
+                         (fn [item]
+                           (let [path (:path item)
+                                 parts (clojure.string/split path "/")
+                                 level (count parts)
+                                 base (last parts)]
+                             (str
+                               (parts-to-md-list parts)
+                               " | " (:title item) " | "
+                               (format_time (new js/Date (:mtime item)) DATEFORMAT)
+                               "\n")))
+                         data)))
+
+(defn serialize-md
+  [data]
+  (println data)
+  (render-md data))
+
+(defn serialize
+  [serializer data]
+  (serializer
+    (vec
+      (map
+        (fn [item]
+          {:path (str "/" (get item "path")) ;; TODO: Github creates relative paths
+           :title (get item "title")
+           :mtime (get item "mtime")
+           :type "blob"})
+        data))))

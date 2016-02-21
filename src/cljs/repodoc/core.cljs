@@ -6,27 +6,24 @@
     [goog.i18n.DateTimeFormat :as dtf]
     [repodoc.data :refer [REPO FILETYPES]]
     [repodoc.fathom :refer [nm]]
+    [repodoc.utils :refer [serialize-md serialize-edn serialize format_time]]
     [repodoc.editor :as e]
-    [cljs.pprint :refer [pprint]]
     [markdown.core :as md]
+    [devtools.core :as devtools]
     ))
 
 (enable-console-print!)
+
+(devtools/set-pref! :install-sanity-hints true)
+(devtools/install!)
 
 ;
 ; Constants
 ;
 (def ^:const DATEFORMAT "d.M.yyyy H:mm")
-(declare serialize-md)
-(declare serialize-edn)
 (declare querydb)
 
 ;; Utils
-
-(defn format_time [d format]
-  "Render instance of js/Date according to format"
-  (let [format (new goog.i18n.DateTimeFormat format)]
-    (.format format d)))
 
 (defn blob?
   [item]
@@ -66,47 +63,10 @@
 (defn querydb [fields]
   (get-in db fields))
 
-(defn serialize-edn
-  "Serialize annotated items as string"
-  [data]
-  (with-out-str (cljs.pprint/pprint data)))
-
-(defn parts-to-md-list
-  [parts]
-  (clojure.string/join
-    "\n"
-    (map-indexed
-      (fn [level part]
-        (str (clojure.string/join (repeat level " "))
-             " * " part))
-      parts)))
-
-(defn serialize-md
-  "Serialize annotated items as Markdown"
-  [data]
-  (clojure.string/join (map
-         (fn [item]
-           (let [path (:path item)
-                 parts (clojure.string/split path "/")
-                 level (count parts)
-                 base (last parts)]
-             (str
-               (parts-to-md-list parts)
-               " | " (:title item) " | "
-               (format_time (new js/Date (:mtime item)) DATEFORMAT)
-               "\n")))
-         data)))
-
 (defn serialize-db
   [serializer]
-  (serializer
-    (vec
-      (map
-        (fn [item]
-          {:path (get item "path")
-           :title (get item "title")
-           :mtime (get item "mtime")})
-        (filter #(get % "mtime") (querydb [:data]))))))
+  (serialize serializer
+             (filter #(get % "mtime") (querydb [:data]))))
 
 ;; Handlers
 

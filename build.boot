@@ -6,12 +6,14 @@
                  [org.clojure/clojurescript "1.7.170"] ;; add CLJS
                  [adzerk/boot-cljs "1.7.170-3"]
                  [pandeiro/boot-http "0.7.0"]
-                 [adzerk/boot-reload "0.4.2"]          ;; add boot-reload
-                 [adzerk/boot-cljs-repl "0.3.0"]       ;; add bREPL
-                 [com.cemerick/piggieback "0.2.1"]     ;; needed by bREPL
-                 [weasel "0.7.0"]                      ;; needed by bREPL
-                 [org.clojure/tools.nrepl "0.2.12"]    ;; needed by bREPL
+                 [adzerk/boot-reload "0.4.2"]           ;; add boot-reload
+                 [adzerk/boot-cljs-repl "0.3.0"]        ;; add bREPL
+                 [com.cemerick/piggieback "0.2.1"]      ;; needed by bREPL
+                 [weasel "0.7.0"]                       ;; needed by bREPL
+                 [org.clojure/tools.nrepl "0.2.12"]     ;; needed by bREPL
                  [com.cognitect/transit-cljs "0.8.237"] ;; Transit for data
+                 [markdown-clj "0.9.85"]                ;; Markdown for export
+                  [binaryage/devtools "0.5.2"]          ;; For sanity
                 ])
 
 (require '[adzerk.boot-cljs :refer [cljs]]
