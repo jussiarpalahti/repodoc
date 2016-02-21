@@ -25,6 +25,13 @@
   "Get param from route params"
   ((aget (.-route js/m) "param") param))
 
+(defn request
+  "m.request wrapper with promise handling"
+  [options cb & err]
+  (.then (.request js/m (clj->js options))
+         (fn [resp] (cb (js->clj resp)))
+         (if (not err) #(.log js/console %) err)))
+
 ;
 ; Closure helpers
 ;
