@@ -181,9 +181,8 @@
                                            {:onclick #(set_serialize serialize-html)} "HTML")
                                        " Click the text area and select text"])
                             (if (= serializer serialize-html)
-                              (nm "div"
-                                  {"config" #(render-html (serialize-db serializer) %1 %2 %3)})
-                              (nm "textarea" (serialize-db serializer)))]))))
+                              (nm "div" (m/trust (serialize-db serializer)))
+                              (nm "textarea" {"key" "ser"} (serialize-db serializer)))]))))
 
 (defn reporender
   "Render repository trees"
