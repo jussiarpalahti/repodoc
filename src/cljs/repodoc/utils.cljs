@@ -139,8 +139,15 @@
   by adding path separator"
   [paths]
   (map #(str "/" (clojure.string/join "/" %))
-       (sort-paths
-         (expand-paths paths))))
+       (expand-paths paths)))
+
+(defn dsu-sort-2
+  [comparator decorator sortable]
+  (map last
+       (sort comparator
+             (map (fn [x]
+                    [(decorator x) x])
+                  sortable))))
 
 (defn create-git-tree
   "Creates a list of maps for
@@ -148,6 +155,32 @@
   [paths]
   (let [dirfiles (path-reduce paths)
         paths (pathify (keys dirfiles))]
-    (map (fn [p]
-           {p (get dirfiles p)})
-         paths)))
+    (flatten
+      (into
+        (map (fn [p]
+               {"path" p "type" "tree"}) paths)
+        (vals dirfiles)))))
+
+(defn vector-compare-2 [val1 val2]
+  "From http://stackoverflow.com/questions/15716894/"
+  (let [value1 (first val1)
+        value2 (first val2)
+        result (apply compare (cut-vec value1 value2))]
+    (println result value1 (count value1) value2 (count value2))
+    (cond
+      (not (= result 0)) result
+      (nil? value1) 0 ; value2 will be nil as well
+      :else (let [c1 (count value1)
+                  c2 (count value2)]
+              (println "sorting else" result value1 c1 value2 c2)
+              (cond
+                (< c1 c2) -1
+                (> c1 c2) 1
+                :else 0)))))
+
+(defn sort-git-tree
+  [tree]
+  (dsu-sort-2
+    vector-compare
+    (fn [p] (let [[_ & dirs] (clojure.string/split (get p "path") #"/")] (vec dirs)))
+    tree))
