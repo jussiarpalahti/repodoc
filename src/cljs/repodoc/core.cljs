@@ -37,6 +37,9 @@
   (contains? (querydb [:opened]) pos))
 
 (defn render-html
+  "This does render, but subsequent
+  redraws probably break stuff...
+  Use the pattern for other things."
   [data el init? ctx]
   (aset el "innerHTML" data))
 
@@ -204,15 +207,28 @@
              (reporender)
              (serialization)]))
 
+(defn index_view
+  [ctrl]
+  (nm "h1" "index"))
 
 ;; Setup
 
-(def app {:controller ctrl :view viewer})
+(def repodoc {:controller ctrl :view viewer})
+
+(def index {:controller (fn [] []) :view index_view})
+
+;; Routing mode
+(aset (.-route js/m) "mode" "hash")
 
 (defn setup []
-  (.mount js/m
-           (.getElementById js/document "app")
-           (clj->js app)))
+  "Mount app"
+  (do
+    (.route js/m
+            (.getElementById js/document "app")
+            "/"
+            (clj->js {"/" index
+                      "/repo/:user/:repository" repodoc}))))
+
 
 (setup)
 
