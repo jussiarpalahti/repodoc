@@ -219,20 +219,22 @@
   (clojure.string/join (map
                          (fn [item]
                            (let [path (:path item)
-                                 parts (clojure.string/split path "/")
+                                 parts (rest (clojure.string/split path "/"))
                                  level (count parts)
                                  base (last parts)]
                              (str
-                               (parts-to-md-list parts)
-                               " | " (:title item) " | "
-                               (format_time (new js/Date (:mtime item)) DATEFORMAT)
+                               (clojure.string/join (repeat level "  "))
+                               "* "
+                               base
+                               (if (= (:type item) "blob")
+                                 (str " | " (:title item) " | "
+                                      (format_time (new js/Date (:mtime item)) DATEFORMAT)))
                                "\n")))
                          data)))
 
 (defn serialize-md
   [data]
-  (println data)
-  (render-md data))
+  (render-md (get-tree data)))
 
 (defn serialize
   [serializer data]
