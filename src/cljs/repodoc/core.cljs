@@ -242,8 +242,12 @@
                                ])])
                (if repositories
                  (nm "div" [(nm "h2" "Repositories")
-                            (nm "ul" [(map #(nm "li" (get % "name"))
-                                           repositories)])]))])))
+                            (nm "ul"
+                                [(map #(nm "li"
+                                           [(nm "a"
+                                                {:href (str "#/repo/" (get % "full_name"))}
+                                                (get % "name"))])
+                                      repositories)])]))])))
 
 ;; Setup
 
