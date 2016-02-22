@@ -218,28 +218,38 @@
              (serialization)]))
 
 (defn fetch_repositories
-  [db username]
+  [username cb]
+  (println "hmm" username)
   (let [repourl (str "https://api.github.com/users/" username "/repos")]
-    (request {:url repourl}  #(println %))))
+    (request {:url repourl}  #(cb %))))
 
 (defn index_view
-  [{:keys [username repositories]} ctrl]
-  (nm "div" [(nm "h1" "RepoDoc App")
-             (nm "h2" "Give username and choose your repository")
-             (nm "div"
-                 [(nm "input"
-                      {"placeholder" "Github username"
-                       "value" username
-                       :onchange (e/text "username" username 40 #())})
-                  (nm "div" [
-                             (nm "button" {:onclick #(fetch_repositories ctrl username)} "Fetch")
-                             ])])]))
+  [{:keys [update query]} ctrl]
+  (let [username (query :username)
+        repositories (query :repositories)]
+    (nm "div" [(nm "h1" "RepoDoc App")
+               (nm "h2" "Give username and choose your repository")
+               (nm "div"
+                   [(nm "input"
+                        {"placeholder" "Github username"
+                         "value" username
+                         :onchange (e/text "username" username 40 #())})
+                    (nm "div" [(nm "button"
+                                   {:onclick #(fetch_repositories
+                                               username
+                                               (fn [data] (update :repositories data)))}
+                                   "Fetch")
+                               ])])
+               (if repositories
+                 (nm "div" [(nm "h2" "Repositories")
+                            (nm "ul" [(map #(nm "li" (get % "name"))
+                                           repositories)])]))])))
 
 ;; Setup
 
 (def repodoc {:controller ctrl :view viewer})
 
-(def index {:controller #(initialize-db {:username "jussiarpalahti" :repositories []})
+(def index {:controller #(initialize-db {:username "jussiarpalahti" :repositories nil})
             :view index_view})
 
 ;; Routing mode
