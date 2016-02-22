@@ -78,13 +78,11 @@
   "Creates closure based database
   of the map given as data"
   [data]
-  (def db (atom data))
-  {:update (fn [key val]
-              (println @db db key val)
-              (swap! db #(assoc % key val)))
-   :query (fn [key]
-             (println @db db key)
-             (get @db key))})
+  (let [cdb (atom data)]
+           {:update (fn [key val]
+                  (swap! cdb #(assoc % key val)))
+            :query (fn [key]
+                 (get @cdb key))}))
 
 ;; Handlers
 
