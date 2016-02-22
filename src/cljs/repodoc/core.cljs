@@ -74,6 +74,18 @@
   (serialize serializer
              (filter #(get % "mtime") (querydb [:data]))))
 
+(defn initialize-db
+  "Creates closure based database
+  of the map given as data"
+  [data]
+  (def db (atom data))
+  {:update (fn [key val]
+              (println @db db key val)
+              (swap! db #(assoc % key val)))
+   :query (fn [key]
+             (println @db db key)
+             (get @db key))})
+
 ;; Handlers
 
 (defn edit [pos]
@@ -229,8 +241,7 @@
 
 (def repodoc {:controller ctrl :view viewer})
 
-(def index {:controller (fn [] {:username "jussiarpalahti"
-                                :repositories []})
+(def index {:controller #(initialize-db {:username "jussiarpalahti" :repositories []})
             :view index_view})
 
 ;; Routing mode
