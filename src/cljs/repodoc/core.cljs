@@ -5,7 +5,7 @@
     [m]
     [goog.i18n.DateTimeFormat :as dtf]
     [repodoc.data :refer [REPO FILETYPES]]
-    [repodoc.fathom :refer [nm request]]
+    [repodoc.fathom :refer [nm request route_param]]
     [repodoc.utils :refer [serialize-md serialize-edn serialize-html serialize format_time]]
     [repodoc.editor :as e]
     [devtools.core :as devtools]
@@ -208,7 +208,10 @@
   []
   (nm "div.toolbar" [(nm "button.pure-button" {:onclick #(toggle-serialization)} "Export")]))
 
-(defn ctrl [])
+(defn ctrl []
+  "https://api.github.com/repos/jussiarpalahti/repodoc/commits"
+  (let [username (route_param "user")
+        repository (route_param "repository")]))
 
 (defn viewer
   [ctrl]
@@ -219,7 +222,6 @@
 
 (defn fetch_repositories
   [username cb]
-  (println "hmm" username)
   (let [repourl (str "https://api.github.com/users/" username "/repos")]
     (request {:url repourl}  #(cb %))))
 
@@ -253,7 +255,9 @@
 
 (def repodoc {:controller ctrl :view viewer})
 
-(def index {:controller #(initialize-db {:username "jussiarpalahti" :repositories nil})
+(def index-app-db (initialize-db {:username "jussiarpalahti" :repositories nil}))
+
+(def index {:controller (fn [] index-app-db)
             :view index_view})
 
 ;; Routing mode
