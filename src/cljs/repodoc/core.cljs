@@ -55,7 +55,7 @@
 
 ;; Data
 
-(def db {:data (get REPO "tree")
+(def db {:data nil
          :start 0
          :editing #{}
          :opened #{}
@@ -83,6 +83,22 @@
                   (swap! cdb #(assoc % key val)))
             :query (fn [key]
                  (get @cdb key))}))
+
+(defn get-repository-tree
+  [username repository sha]
+  (request {:url (str "https://api.github.com/repos/"
+                      username "/" repository
+                      "/git/trees/" sha "?recursive=1")}
+           (fn [data]
+             (updatedb [:repository] repository)
+             (updatedb [:username] username)
+             (updatedb [:data] (get data "tree")))))
+
+(defn get-repository-data
+  [username repository]
+  (request {:url (str "https://api.github.com/repos/" username "/" repository "/commits")}
+           (fn [commits]
+             (get-repository-tree username repository (get (first commits) "sha")))))
 
 ;; Handlers
 
@@ -211,7 +227,11 @@
 (defn ctrl []
   "https://api.github.com/repos/jussiarpalahti/repodoc/commits"
   (let [username (route_param "user")
-        repository (route_param "repository")]))
+        repository (route_param "repository")]
+    (if (or
+        (not= username (querydb [:username]))
+        (not= repository (querydb [:repository])))
+      (get-repository-data username repository))))
 
 (defn viewer
   [ctrl]
