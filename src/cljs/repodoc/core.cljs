@@ -84,6 +84,38 @@
             :query (fn [key]
                  (get @cdb key))}))
 
+(defn get-annotation-for-path
+  [repodoc path]
+  (first (filter #(if (= (:path %) path) true)
+                 repodoc)))
+
+(defn merge-repodoc
+  [repodoc]
+  (updatedb [:data]
+            (vec (map (fn [item]
+                     (let [ann (get-annotation-for-path repodoc (get item "path"))]
+                       (if ann
+                         (merge item ann)
+                         item)))
+                 (querydb [:data])))))
+
+(defn parse-repodoc
+  [repodoc]
+  (let [doc (cljs.reader/read-string (js/atob (get repodoc "content")))]
+    (merge-repodoc
+      (map (fn [ann]
+             (-> ann
+               (assoc "mtime" (new js/Date (:mtime ann)))
+               (assoc "path" (:path ann))
+               (assoc "title" (:title ann))))
+           doc))))
+
+(defn get-repodoc
+  [tree]
+  (let [repodoc-meta (first (filter #(if (= (get % "path") "root.repodoc") true) tree))]
+    (request {:url (get repodoc-meta "url")}
+             (fn [repodoc] (parse-repodoc repodoc)))))
+
 (defn get-repository-tree
   [username repository sha]
   (request {:url (str "https://api.github.com/repos/"
@@ -92,7 +124,8 @@
            (fn [data]
              (updatedb [:repository] repository)
              (updatedb [:username] username)
-             (updatedb [:data] (get data "tree")))))
+             (updatedb [:data] (get data "tree"))
+             (get-repodoc (get data "tree")))))
 
 (defn get-repository-data
   [username repository]
@@ -177,7 +210,7 @@
   (if (and (get item "mtime" false) (opened? pos))
     (let [mtime (get item "mtime")]
       (nm "div.pure-u-1-1.pure-u-sm-1"
-          ["Modification time:" (format_time (new js/Date mtime) DATEFORMAT)]))))
+          ["Modification time: " (format_time (new js/Date mtime) DATEFORMAT)]))))
 
 (defn node
   "Renders one node from tree with indentation"
