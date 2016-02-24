@@ -86,7 +86,7 @@
 
 (defn get-annotation-for-path
   [repodoc path]
-  (first (filter #(if (= (:path %) path) true)
+  (first (filter #(if (= (get % "path") path) true)
                  repodoc)))
 
 (defn merge-repodoc
@@ -106,7 +106,7 @@
       (map (fn [ann]
              (-> ann
                (assoc "mtime" (new js/Date (:mtime ann)))
-               (assoc "path" (:path ann))
+               (assoc "path" (subs (:path ann) 1)) ;; TODO: GH paths are relative
                (assoc "title" (:title ann))))
            doc))))
 
