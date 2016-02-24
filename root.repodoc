@@ -1,11 +1,18 @@
 ;; This is a repodoc, a Clojure based repository documentation format
 
-[{:path "LICENSE",
+[{:path "/LICENSE",
   :title "asdfadsf",
-  :mtime "Mon Feb 15 2016 21:33:12 GMT+0200 (EET)"}
- {:path "README.md",
+  :mtime #inst "2016-02-15T19:33:12.000-00:00",
+  :type "blob"}
+ {:path "/README.md",
   :title "This is the readme",
-  :mtime "Mon Feb 15 2016 22:46:19 GMT+0200 (EET)"}
- {:path "src/cljs/repodoc/core.cljs",
+  :mtime #inst "2016-02-15T20:46:19.000-00:00",
+  :type "blob"}
+ {:path "/root.repodoc",
+  :title "This is the doc you're reading!",
+  :mtime "Thu Feb 25 2016 00:26:47 GMT+0200 (EET)",
+  :type "blob"}
+ {:path "/src/cljs/repodoc/core.cljs",
   :title "This is the code",
-  :mtime "Mon Feb 15 2016 22:46:00 GMT+0200 (EET)"}]
+  :mtime #inst "2016-02-15T20:46:00.000-00:00",
+  :type "blob"}]
